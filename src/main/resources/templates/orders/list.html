@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мои заказы - Web Store</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .orders-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .orders-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .order-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .order-id {
+            font-weight: bold;
+            color: #0072c6;
+        }
+        .order-date {
+            color: #666;
+            font-size: 14px;
+        }
+        .order-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .status-confirmed {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        .status-shipped {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+        .status-delivered {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .status-cancelled {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .order-items {
+            margin: 15px 0;
+        }
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .order-item:last-child {
+            border-bottom: none;
+        }
+        .order-total {
+            text-align: right;
+            font-size: 18px;
+            font-weight: bold;
+            color: #28a745;
+            margin-top: 15px;
+        }
+        .order-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .empty-orders {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <div class="container">
+        <a href="/" class="logo">Web Store</a>
+        <div class="user-info" th:replace="~{fragments/header :: user-info}"></div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="orders-header">
+        <h1>📦 Мои заказы</h1>
+        <div>
+            <a th:href="@{/catalog}" class="btn">← Вернуться в каталог</a>
+            <a th:href="@{/orders/create}" class="btn btn-success">🛒 Создать новый заказ</a>
+        </div>
+    </div>
+
+    <div th:if="${success}" class="alert alert-success">
+        [[${success}]]
+    </div>
+    <div th:if="${error}" class="alert alert-error">
+        [[${error}]]
+    </div>
+
+    <div th:if="${orders != null and !orders.empty}">
+        <div class="orders-list">
+            <div th:each="order : ${orders}" class="order-card">
+                <div class="order-header">
+                    <div>
+                        <span class="order-id">Заказ #[[${order.id}]]</span>
+                        <span class="order-date">
+                                ([[${#dates.format(order.createdAt, 'dd.MM.yyyy HH:mm')}]])
+                            </span>
+                    </div>
+                    <div>
+                            <span th:class="'order-status status-' + ${order.status.name().toLowerCase()}"
+                                  th:text="${order.status == 'PENDING' ? 'Ожидание' :
+                                           order.status == 'CONFIRMED' ? 'Подтвержден' :
+                                           order.status == 'SHIPPED' ? 'Отправлен' :
+                                           order.status == 'DELIVERED' ? 'Доставлен' : 'Отменен'}">
+                            </span>
+                    </div>
+                </div>
+
+                <div class="order-items">
+                    <div th:each="item : ${order.items}" class="order-item">
+                        <div>
+                            <strong th:text="${item.product.name}"></strong>
+                            <div style="font-size: 14px; color: #666;">
+                                [[${item.quantity}]] × $[[${item.price}]]
+                            </div>
+                        </div>
+                        <div style="font-weight: bold;">
+                            $[[${#numbers.formatDecimal(item.getItemTotal(), 1, 2)}]]
+                        </div>
+                    </div>
+                </div>
+
+                <div class="order-total">
+                    Итого: $[[${#numbers.formatDecimal(order.totalAmount, 1, 2)}]]
+                </div>
+
+                <div class="order-actions">
+                    <a th:href="@{'/orders/' + ${order.id}}" class="btn">👁️ Подробнее</a>
+
+                    <div th:if="${order.status.name() == 'PENDING'}">
+                        <form th:action="@{'/orders/' + ${order.id} + '/cancel'}" method="post"
+                              onsubmit="return confirm('Отменить заказ?');">
+                            <button type="submit" class="btn btn-admin">❌ Отменить</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:if="${orders == null or orders.empty}" class="empty-orders">
+        <h3>У вас пока нет заказов</h3>
+        <p>Перейдите в каталог и добавьте товары в заказ</p>
+        <a th:href="@{/catalog}" class="btn btn-success">Перейти в каталог</a>
+    </div>
+</div>
+</body>
+</html>

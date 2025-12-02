@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Заказ #[[${order.id}]] - Web Store</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .order-details-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .order-info {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        .info-row {
+            display: flex;
+            margin-bottom: 10px;
+        }
+        .info-label {
+            width: 150px;
+            font-weight: bold;
+            color: #666;
+        }
+        .info-value {
+            flex: 1;
+        }
+        .order-items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .order-items-table th, .order-items-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        .order-items-table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        .product-image-small {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+        }
+        .order-summary {
+            text-align: right;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #ddd;
+        }
+        .total-amount {
+            font-size: 24px;
+            color: #28a745;
+            font-weight: bold;
+        }
+        .order-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <div class="container">
+        <a href="/" class="logo">Web Store</a>
+        <div class="user-info" th:replace="~{fragments/header :: user-info}"></div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="order-details-header">
+        <h1>📋 Детали заказа #[[${order.id}]]</h1>
+        <a th:href="@{/orders}" class="btn">← Назад к списку заказов</a>
+    </div>
+
+    <div th:if="${success}" class="alert alert-success">
+        [[${success}]]
+    </div>
+    <div th:if="${error}" class="alert alert-error">
+        [[${error}]]
+    </div>
+
+    <div class="order-info">
+        <div class="info-row">
+            <div class="info-label">Номер заказа:</div>
+            <div class="info-value"><strong>#[[${order.id}]]</strong></div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Дата создания:</div>
+            <div class="info-value">[[${#dates.format(order.createdAt, 'dd.MM.yyyy HH:mm')}]]</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Статус:</div>
+            <div class="info-value">
+                    <span th:class="'order-status status-' + ${order.status.name().toLowerCase()}"
+                          style="padding: 5px 15px;"
+                          th:text="${order.status == 'PENDING' ? '⏳ Ожидание' :
+                                   order.status == 'CONFIRMED' ? '✅ Подтвержден' :
+                                   order.status == 'SHIPPED' ? '🚚 Отправлен' :
+                                   order.status == 'DELIVERED' ? '📦 Доставлен' : '❌ Отменен'}">
+                    </span>
+            </div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Обновлен:</div>
+            <div class="info-value">[[${#dates.format(order.updatedAt, 'dd.MM.yyyy HH:mm')}]]</div>
+        </div>
+    </div>
+
+    <h3>Товары в заказе</h3>
+    <table class="order-items-table">
+        <thead>
+        <tr>
+            <th>Товар</th>
+            <th>Цена за единицу</th>
+            <th>Количество</th>
+            <th>Сумма</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="item : ${order.items}">
+            <td>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <img th:src="${item.product.imagePath != null} ? ${item.product.imagePath} : '/images/no-image.jpg'"
+                         class="product-image-small">
+                    <div>
+                        <strong th:text="${item.product.name}"></strong><br>
+                        <small style="color: #666;" th:text="${item.product.description}"></small>
+                    </div>
+                </div>
+            </td>
+            <td th:text="'$' + ${#numbers.formatDecimal(item.price, 1, 2)}"></td>
+            <td th:text="${item.quantity}"></td>
+            <td th:text="'$' + ${#numbers.formatDecimal(item.getItemTotal(), 1, 2)}"
+                style="font-weight: bold;"></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div class="order-summary">
+        <div class="total-amount">
+            Итого к оплате: $[[${#numbers.formatDecimal(order.totalAmount, 1, 2)}]]
+        </div>
+    </div>
+
+    <div class="order-actions">
+        <a th:href="@{/catalog}" class="btn">🛒 Продолжить покупки</a>
+
+        <div th:if="${order.status.name() == 'PENDING'}">
+            <form th:action="@{'/orders/' + ${order.id} + '/cancel'}" method="post"
+                  onsubmit="return confirm('Вы уверены, что хотите отменить этот заказ?');">
+                <button type="submit" class="btn btn-admin">❌ Отменить заказ</button>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>
