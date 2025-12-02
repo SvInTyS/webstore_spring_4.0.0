@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${product.name} + ' - Web Store'"></title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .product-details {
+            display: flex;
+            gap: 40px;
+            margin-top: 20px;
+        }
+        .product-image-container {
+            flex: 0 0 400px;
+        }
+        .product-image-large {
+            width: 100%;
+            max-height: 400px;
+            object-fit: contain;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .product-info {
+            flex: 1;
+        }
+        .product-price-large {
+            font-size: 28px;
+            color: #28a745;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+        .product-actions {
+            margin-top: 30px;
+            display: flex;
+            gap: 15px;
+        }
+        .back-link {
+            margin-top: 20px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <div class="container">
+        <a href="/" class="logo">Web Store</a>
+        <div class="user-info" th:replace="~{fragments/header :: user-info}"></div>
+    </div>
+</div>
+
+<div class="container">
+    <a th:href="@{/catalog}" class="back-link">← Назад в каталог</a>
+
+    <div class="product-details">
+        <div class="product-image-container">
+            <img th:src="${product.imagePath != null} ? ${product.imagePath} : '/images/no-image.jpg'"
+                 th:alt="${product.name}" class="product-image-large">
+        </div>
+
+        <div class="product-info">
+            <h1 th:text="${product.name}"></h1>
+
+            <div class="product-price-large" th:text="${'$' + product.price}"></div>
+
+            <div th:class="${product.stock > 0} ? 'in-stock' : 'out-of-stock'"
+                 style="font-size: 16px; margin: 15px 0;">
+                    <span th:if="${product.stock > 0}">
+                        ✅ В наличии: <strong th:text="${product.stock}"></strong> шт.
+                    </span>
+                <span th:if="${product.stock == 0}" style="color: #dc3545;">
+                        ❌ Нет в наличии
+                    </span>
+            </div>
+
+            <div style="margin: 20px 0;">
+                <h3>Описание</h3>
+                <p style="line-height: 1.6;" th:text="${product.description}"></p>
+            </div>
+
+            <div class="product-actions">
+                <div sec:authorize="hasRole('USER')">
+                    <form th:action="@{'/orders/{id}/add-product'(id=${product.id})}" method="post">
+                        <input type="hidden" name="productId" th:value="${product.id}">
+                        <label>Количество:</label>
+                        <input type="number" name="quantity" value="1" min="1"
+                               th:max="${product.stock}" style="width: 80px; margin-right: 10px;">
+                        <button type="submit" class="btn btn-success"
+                                th:disabled="${product.stock == 0}">
+                            Добавить в заказ
+                        </button>
+                    </form>
+                </div>
+
+                <div sec:authorize="!isAuthenticated()">
+                    <p>Для заказа товара <a th:href="@{/login}">войдите в систему</a></p>
+                </div>
+
+                <div sec:authorize="hasRole('ADMIN')">
+                    <a th:href="@{'/admin/products/' + ${product.id} + '/edit'}"
+                       class="btn btn-admin">Редактировать товар</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
