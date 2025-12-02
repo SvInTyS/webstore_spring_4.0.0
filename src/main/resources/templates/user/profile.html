@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мой профиль - Web Store</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .profile-container {
+            display: flex;
+            gap: 40px;
+            margin-top: 20px;
+        }
+        .profile-sidebar {
+            width: 250px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        .profile-content {
+            flex: 1;
+        }
+        .user-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: #0072c6;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            font-weight: bold;
+            margin: 0 auto 20px;
+        }
+        .nav-menu {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+        .nav-menu li {
+            margin-bottom: 10px;
+        }
+        .nav-menu a {
+            display: block;
+            padding: 10px 15px;
+            border-radius: 4px;
+            text-decoration: none;
+            color: #333;
+        }
+        .nav-menu a:hover, .nav-menu a.active {
+            background-color: #0072c6;
+            color: white;
+        }
+        .info-card {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        .info-row {
+            display: flex;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .info-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .info-label {
+            width: 150px;
+            font-weight: bold;
+            color: #666;
+        }
+        .info-value {
+            flex: 1;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+        }
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #0072c6;
+        }
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <div class="container">
+        <a href="/" class="logo">Web Store</a>
+        <div class="user-info" th:replace="~{fragments/header :: user-info}"></div>
+    </div>
+</div>
+
+<div class="container">
+    <h1>👤 Мой профиль</h1>
+
+    <div class="profile-container">
+        <!-- Боковая панель -->
+        <div class="profile-sidebar">
+            <div class="user-avatar" th:text="${#strings.substring(user.username, 0, 1).toUpperCase()}">
+                U
+            </div>
+
+            <h3 style="text-align: center;" th:text="${user.username}"></h3>
+            <p style="text-align: center; color: #666; font-size: 14px;">
+                [[${user.role == 'ADMIN' ? 'Администратор' : 'Пользователь'}]]
+            </p>
+
+            <ul class="nav-menu">
+                <li><a href="#" class="active">📊 Общая информация</a></li>
+                <li><a th:href="@{/orders}">📦 Мои заказы</a></li>
+                <li><a th:href="@{/user/settings}">⚙️ Настройки</a></li>
+                <li><a th:href="@{/catalog}">🛒 Каталог товаров</a></li>
+                <li sec:authorize="hasRole('ADMIN')">
+                    <a th:href="@{/admin/products}">🔧 Админ-панель</a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Основной контент -->
+        <div class="profile-content">
+            <div th:if="${success}" class="alert alert-success">
+                [[${success}]]
+            </div>
+            <div th:if="${error}" class="alert alert-error">
+                [[${error}]]
+            </div>
+
+            <div class="info-card">
+                <h3>📝 Личная информация</h3>
+
+                <div class="info-row">
+                    <div class="info-label">Имя пользователя:</div>
+                    <div class="info-value">
+                        <strong th:text="${user.username}"></strong>
+                    </div>
+                </div>
+
+                <div class="info-row">
+                    <div class="info-label">Email:</div>
+                    <div class="info-value" th:text="${user.email}"></div>
+                </div>
+
+                <div class="info-row">
+                    <div class="info-label">Роль:</div>
+                    <div class="info-value">
+                            <span th:if="${user.role == 'ADMIN'}" style="color: #dc3545; font-weight: bold;">
+                                ⭐ Администратор
+                            </span>
+                        <span th:if="${user.role == 'USER'}" style="color: #28a745; font-weight: bold;">
+                                👤 Пользователь
+                            </span>
+                    </div>
+                </div>
+
+                <div class="info-row">
+                    <div class="info-label">Дата регистрации:</div>
+                    <div class="info-value" th:text="${#dates.format(user.createdAt, 'dd.MM.yyyy HH:mm')}"></div>
+                </div>
+
+                <div class="info-row">
+                    <div class="info-label">Последнее обновление:</div>
+                    <div class="info-value" th:text="${#dates.format(user.updatedAt, 'dd.MM.yyyy HH:mm')}"></div>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <h3>📊 Статистика</h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-number" th:text="${ordersCount != null ? ordersCount : 0}">0</div>
+                        <div class="stat-label">Всего заказов</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" th:text="${activeOrders != null ? activeOrders : 0}">0</div>
+                        <div class="stat-label">Активные заказы</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" th:text="${completedOrders != null ? completedOrders : 0}">0</div>
+                        <div class="stat-label">Завершенные</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" th:text="${totalSpent != null ? '$' + totalSpent : '$0'}">$0</div>
+                        <div class="stat-label">Всего потрачено</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <h3>⚡ Быстрые действия</h3>
+                <div style="display: flex; gap: 15px; margin-top: 15px;">
+                    <a th:href="@{/catalog}" class="btn">🛒 Перейти в каталог</a>
+                    <a th:href="@{/orders}" class="btn">📦 Мои заказы</a>
+                    <a th:href="@{/user/settings}" class="btn">⚙️ Настройки</a>
+                    <form th:action="@{/logout}" method="post" style="display:inline;">
+                        <button type="submit" class="btn btn-admin">🚪 Выйти</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

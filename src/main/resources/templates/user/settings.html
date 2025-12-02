@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Настройки профиля - Web Store</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .settings-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .settings-card {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .form-actions {
+            margin-top: 30px;
+            display: flex;
+            gap: 15px;
+        }
+        .current-info {
+            background-color: #f8f9fa;
+            padding: 10px 15px;
+            border-radius: 4px;
+            margin-top: 5px;
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <div class="container">
+        <a href="/" class="logo">Web Store</a>
+        <div class="user-info" th:replace="~{fragments/header :: user-info}"></div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="settings-container">
+        <h1>⚙️ Настройки профиля</h1>
+
+        <a th:href="@{/user/profile}" class="btn" style="margin-bottom: 20px;">
+            ← Назад в профиль
+        </a>
+
+        <div th:if="${success}" class="alert alert-success">
+            [[${success}]]
+        </div>
+        <div th:if="${error}" class="alert alert-error">
+            [[${error}]]
+        </div>
+
+        <!-- Форма обновления email -->
+        <div class="settings-card">
+            <h3>📧 Изменить email</h3>
+            <p style="color: #666; margin-bottom: 20px;">
+                Текущий email: <strong th:text="${user.email}"></strong>
+            </p>
+
+            <form th:action="@{/user/update-email}" method="post">
+                <div class="form-group">
+                    <label for="newEmail">Новый email:</label>
+                    <input type="email" id="newEmail" name="newEmail"
+                           class="form-control" required>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-success">Обновить email</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Форма смены пароля -->
+        <div class="settings-card">
+            <h3>🔐 Сменить пароль</h3>
+            <form th:action="@{/user/change-password}" method="post">
+                <div class="form-group">
+                    <label for="currentPassword">Текущий пароль:</label>
+                    <input type="password" id="currentPassword" name="currentPassword"
+                           class="form-control" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="newPassword">Новый пароль:</label>
+                        <input type="password" id="newPassword" name="newPassword"
+                               class="form-control" required>
+                        <small>Минимум 6 символов</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirmPassword">Подтвердите новый пароль:</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword"
+                               class="form-control" required>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-success">Сменить пароль</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Информация об аккаунте -->
+        <div class="settings-card">
+            <h3>📊 Информация об аккаунте</h3>
+            <div style="color: #666;">
+                <p><strong>Имя пользователя:</strong> [[${user.username}]]</p>
+                <p><strong>Роль:</strong> [[${user.role == 'ADMIN' ? 'Администратор' : 'Пользователь'}]]</p>
+                <p><strong>Дата регистрации:</strong> [[${#dates.format(user.createdAt, 'dd.MM.yyyy HH:mm')}]]</p>
+                <p><strong>Последнее обновление:</strong> [[${#dates.format(user.updatedAt, 'dd.MM.yyyy HH:mm')}]]</p>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
