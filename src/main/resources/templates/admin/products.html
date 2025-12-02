@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Админ-панель - Управление товарами</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .admin-actions {
+            margin: 20px 0;
+            display: flex;
+            gap: 15px;
+        }
+        .products-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .products-table th, .products-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        .products-table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        .products-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .products-table tr:hover {
+            background-color: #f5f5f5;
+        }
+        .product-image-small {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+        }
+        .actions-cell {
+            display: flex;
+            gap: 10px;
+        }
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #0072c6;
+        }
+        .stat-label {
+            color: #6c757d;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <div class="container">
+        <a href="/" class="logo">Web Store</a>
+        <div class="user-info" th:replace="~{fragments/header :: user-info}"></div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="admin-header">
+        <h1>📦 Управление товарами</h1>
+        <a th:href="@{/catalog}" class="btn">← Вернуться в магазин</a>
+    </div>
+
+    <div th:if="${success}" class="alert alert-success">
+        [[${success}]]
+    </div>
+    <div th:if="${error}" class="alert alert-error">
+        [[${error}]]
+    </div>
+
+    <!-- Статистика -->
+    <div class="stats-cards">
+        <div class="stat-card">
+            <div class="stat-number" th:text="${products != null ? products.size() : 0}">0</div>
+            <div class="stat-label">Всего товаров</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" th:text="${products != null ? products.?[stock > 0].size() : 0}">0</div>
+            <div class="stat-label">Товаров в наличии</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" th:text="${products != null ? products.?[stock == 0].size() : 0}">0</div>
+            <div class="stat-label">Товаров нет в наличии</div>
+        </div>
+    </div>
+
+    <div class="admin-actions">
+        <a th:href="@{/admin/products/new}" class="btn btn-success">➕ Добавить новый товар</a>
+        <a th:href="@{/admin}" class="btn">📊 Общая статистика</a>
+    </div>
+
+    <div th:if="${products != null and !products.empty}">
+        <table class="products-table">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Изображение</th>
+                <th>Название</th>
+                <th>Описание</th>
+                <th>Цена</th>
+                <th>На складе</th>
+                <th>Действия</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="product : ${products}">
+                <td th:text="${product.id}"></td>
+                <td>
+                    <img th:src="${product.imagePath != null} ? ${product.imagePath} : '/images/no-image.jpg'"
+                         class="product-image-small">
+                </td>
+                <td>
+                    <strong th:text="${product.name}"></strong><br>
+                    <small th:text="${#dates.format(product.createdAt, 'dd.MM.yyyy HH:mm')}"></small>
+                </td>
+                <td style="max-width: 300px;">
+                    <div style="max-height: 100px; overflow-y: auto;">
+                        <span th:text="${#strings.abbreviate(product.description, 150)}"></span>
+                    </div>
+                </td>
+                <td th:text="${'$' + product.price}" style="font-weight: bold; color: #28a745;"></td>
+                <td>
+                            <span th:if="${product.stock > 0}" style="color: #28a745;">
+                                ✅ [[${product.stock}]] шт.
+                            </span>
+                    <span th:if="${product.stock == 0}" style="color: #dc3545;">
+                                ❌ Нет в наличии
+                            </span>
+                </td>
+                <td class="actions-cell">
+                    <a th:href="@{'/catalog/' + ${product.id}}" class="btn" target="_blank">
+                        👁️ Просмотр
+                    </a>
+                    <a th:href="@{'/admin/products/' + ${product.id} + '/edit'}" class="btn">
+                        ✏️ Редактировать
+                    </a>
+                    <form th:action="@{'/admin/products/' + ${product.id} + '/delete'}"
+                          method="post" onsubmit="return confirm('Удалить этот товар?');">
+                        <button type="submit" class="btn btn-admin">🗑️ Удалить</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div th:if="${products == null or products.empty}" style="text-align: center; padding: 40px;">
+        <h3>Товары не найдены</h3>
+        <p>Добавьте первый товар в систему</p>
+        <a th:href="@{/admin/products/new}" class="btn btn-success">Добавить товар</a>
+    </div>
+</div>
+</body>
+</html>
