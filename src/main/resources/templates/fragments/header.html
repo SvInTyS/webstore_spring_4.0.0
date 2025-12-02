@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Store</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="header">
+    <div class="container">
+        <a th:href="@{/}" class="logo">Web Store</a>
+
+        <div class="user-info" sec:authorize="isAuthenticated()">
+                <span>Вы вошли как:
+                    <strong sec:authentication="name"></strong>
+                    <span sec:authentication="principal.authorities"></span>
+                </span>
+            <a th:href="@{/catalog}">Каталог</a>
+            <a th:href="@{/user/profile}" sec:authorize="hasRole('USER')">Мой профиль</a>
+            <a th:href="@{/admin/products}" sec:authorize="hasRole('ADMIN')">Админ-панель</a>
+            <form th:action="@{/logout}" method="post" style="display:inline;">
+                <button type="submit">Выйти</button>
+            </form>
+        </div>
+
+        <div class="user-info" sec:authorize="!isAuthenticated()">
+            <a th:href="@{/catalog}">Каталог</a>
+            <a th:href="@{/login}">Войти</a>
+            <a th:href="@{/register}">Зарегистрироваться</a>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Сообщения об успехе/ошибках -->
+    <div th:if="${success}" class="alert alert-success">
+        [[${success}]]
+    </div>
+    <div th:if="${error}" class="alert alert-danger">
+        [[${error}]]
+    </div>
+
+    <!-- Контент страницы будет здесь -->
+    <div th:fragment="content">
+        <h1>Добро пожаловать!</h1>
+    </div>
+</div>
+</body>
+</html>

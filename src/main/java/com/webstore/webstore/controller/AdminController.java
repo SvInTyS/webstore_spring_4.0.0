@@ -30,6 +30,7 @@ public class AdminController {
     @GetMapping("/products/new")
     public String newProductForm(Model model) {
         model.addAttribute("product", new Product());
+        model.addAttribute("isNew", true);
         return "admin/product-form";
     }
 
@@ -37,7 +38,7 @@ public class AdminController {
     public String createProduct(@RequestParam String name,
                                 @RequestParam String description,
                                 @RequestParam BigDecimal price,
-                                @RequestParam String imagePath,
+                                @RequestParam(required = false) String imagePath,
                                 @RequestParam Integer stock,
                                 RedirectAttributes redirectAttributes) {
         Product product = new Product(name, description, price, imagePath, stock);
@@ -53,6 +54,7 @@ public class AdminController {
                 .orElseThrow(() -> new IllegalArgumentException("Товар не найден"));
 
         model.addAttribute("product", product);
+        model.addAttribute("isNew", false);
         return "admin/product-form";
     }
 
@@ -61,7 +63,7 @@ public class AdminController {
                                 @RequestParam String name,
                                 @RequestParam String description,
                                 @RequestParam BigDecimal price,
-                                @RequestParam String imagePath,
+                                @RequestParam(required = false) String imagePath,
                                 @RequestParam Integer stock,
                                 RedirectAttributes redirectAttributes) {
         Product productDetails = new Product(name, description, price, imagePath, stock);
