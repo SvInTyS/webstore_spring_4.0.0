@@ -17,4 +17,11 @@ public class MainController {
         return "login";
     }
    */
+    @GetMapping("/test")
+    @ResponseBody
+    public String test() {
+        return "Application is running! Database check: " +
+                "Users: " + userRepository.count() + ", " +
+                "Products: " + productRepository.count();
+    }
 }

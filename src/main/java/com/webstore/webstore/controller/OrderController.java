@@ -25,7 +25,7 @@ public class OrderController {
 
     @GetMapping
     public String myOrders(@AuthenticationPrincipal UserDetails userDetails, Model model) {
-        User user = (User) userService.loadUserByUsername(userDetails.getUsername());
+        User user = userService.findByUsernameEntity(userDetails.getUsername());
         model.addAttribute("orders", orderService.getUserOrders(user));
         return "orders/list";
     }
@@ -38,7 +38,7 @@ public class OrderController {
                 .orElseThrow(() -> new IllegalArgumentException("Заказ не найден"));
 
         // Проверяем, что заказ принадлежит пользователю
-        User user = (User) userService.loadUserByUsername(userDetails.getUsername());
+        User user = userService.findByUsernameEntity(userDetails.getUsername());
         if (!order.getUser().getId().equals(user.getId())) {
             throw new IllegalArgumentException("Доступ запрещен");
         }
@@ -50,7 +50,7 @@ public class OrderController {
     @PostMapping("/create")
     public String createOrder(@AuthenticationPrincipal UserDetails userDetails,
                               RedirectAttributes redirectAttributes) {
-        User user = (User) userService.loadUserByUsername(userDetails.getUsername());
+        User user = userService.findByUsernameEntity(userDetails.getUsername());
         Order order = orderService.createOrder(user);
 
         redirectAttributes.addFlashAttribute("success", "Заказ создан. Добавьте товары.");
@@ -79,7 +79,7 @@ public class OrderController {
         Order order = orderService.getOrderById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Заказ не найден"));
 
-        User user = (User) userService.loadUserByUsername(userDetails.getUsername());
+        User user = userService.findByUsernameEntity(userDetails.getUsername());
         if (!order.getUser().getId().equals(user.getId())) {
             redirectAttributes.addFlashAttribute("error", "Доступ запрещен");
             return "redirect:/orders";

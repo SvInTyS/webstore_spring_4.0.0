@@ -26,28 +26,21 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 
-    // Thymeleaf Extras для Spring Security
+    // Thymeleaf Extras для Spring Security 6
     implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
+
+    // H2 Database с явным указанием версии для Jakarta EE
+    runtimeOnly 'com.h2database:h2:2.2.224'
 
     // DevTools для разработки
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
-    // H2 Database
-    runtimeOnly 'com.h2database:h2:2.2.224'  // Явно указываем версию
-
-    // ТЕСТИРОВАНИЕ - ВАЖНО: исправленные зависимости
+    // Тестирование
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    // Spring Security Test
     testImplementation 'org.springframework.security:spring-security-test'
-    // Mockito для моков
-    testImplementation 'org.mockito:mockito-core'
-    // Для интеграционных тестов
-    testImplementation 'org.springframework.boot:spring-boot-test'
-
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 tasks.named('test') {
     useJUnitPlatform()
 }
-
