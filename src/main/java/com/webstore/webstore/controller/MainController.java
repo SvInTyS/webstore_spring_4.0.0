@@ -10,9 +10,11 @@ public class MainController {
     public String home() {
         return "index";
     }
-
-    @GetMapping("/about")
-    public String about() {
-        return "about";
+    /*
+   Удалил дубль метода
+    @GetMapping("/login")
+    public String login() {
+        return "login";
     }
+   */
 }

@@ -1,27 +1,81 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{fragments/header :: layout(~{::content})}">
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Главная страница - Web Store</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        .menu {
+            margin: 20px 0;
+        }
+        .menu a {
+            display: inline-block;
+            margin-right: 15px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .error {
+            color: red;
+            background-color: #ffe6e6;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
 <body>
-<div th:fragment="content">
-    <h1>Добро пожаловать в наш магазин!</h1>
-    <p>Это интернет-магазин на Spring Boot 4.0.0</p>
+<div class="container">
+    <h1>🎉 Web Store запущен!</h1>
+    <p>Интернет-магазин на Spring Boot 4.0.0 успешно запущен.</p>
 
-    <div sec:authorize="!isAuthenticated()">
-        <p>Для доступа к полному функционалу:</p>
-        <a th:href="@{/register}" class="btn">Зарегистрироваться</a>
-        <a th:href="@{/login}" class="btn">Войти</a>
+    <div class="menu">
+        <h3>Быстрые ссылки:</h3>
+        <a href="/h2-console">📊 H2 Console (база данных)</a>
+        <a href="/login">🔐 Войти в систему</a>
+        <a href="/catalog">🛒 Каталог товаров</a>
     </div>
 
-    <div sec:authorize="isAuthenticated()">
-        <p>Перейдите в каталог для просмотра товаров:</p>
-        <a th:href="@{/catalog}" class="btn">Перейти в каталог</a>
+    <div th:if="${param.error}" class="error">
+        Ошибка авторизации. Проверьте логин и пароль.
     </div>
 
-    <div sec:authorize="hasRole('ADMIN')">
-        <hr>
-        <p>Вы имеете права администратора:</p>
-        <a th:href="@{/admin/products}" class="btn btn-admin">Админ-панель</a>
+    <div th:if="${param.logout}" style="color: green; margin: 10px 0;">
+        Вы успешно вышли из системы.
     </div>
+
+    <h3>Тестовые пользователи:</h3>
+    <ul>
+        <li><strong>Администратор:</strong> admin / admin123</li>
+        <li><strong>Пользователь:</strong> user / user123</li>
+    </ul>
+
+    <h3>Технологии:</h3>
+    <ul>
+        <li>Spring Boot 4.0.0</li>
+        <li>Java 21</li>
+        <li>Spring Security 6.3</li>
+        <li>H2 Database</li>
+        <li>Thymeleaf</li>
+    </ul>
 </div>
 </body>
 </html>

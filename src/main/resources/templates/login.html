@@ -2,114 +2,107 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Вход - Web Store</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <title>Вход в систему</title>
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f5f5f5;
+            margin: 0;
+        }
         .login-container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            width: 100%;
             max-width: 400px;
-            margin: 50px auto;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            background-color: #f9f9f9;
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
         }
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
         label {
             display: block;
             margin-bottom: 5px;
             font-weight: bold;
+            color: #555;
         }
-        input[type="text"],
-        input[type="password"] {
+        input {
             width: 100%;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 3px;
-        }
-        .btn {
-            background-color: #007bff;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 3px;
-            cursor: pointer;
-            width: 100%;
-        }
-        .btn:hover {
-            background-color: #0056b3;
-        }
-        .alert {
             padding: 10px;
-            margin-bottom: 15px;
-            border-radius: 3px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 16px;
         }
-        .alert-error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
         }
-        .alert-success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+        button:hover {
+            background-color: #45a049;
         }
-        .register-link {
+        .error {
+            color: #d32f2f;
+            background-color: #ffebee;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
             text-align: center;
-            margin-top: 15px;
+        }
+        .links {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .links a {
+            color: #4CAF50;
+            text-decoration: none;
         }
     </style>
 </head>
 <body>
-<div class="header">
-    <div class="container">
-        <a href="/" class="logo">Web Store</a>
-        <div class="user-info">
-            <a href="/catalog">Каталог</a>
-            <a href="/register">Зарегистрироваться</a>
-        </div>
+<div class="login-container">
+    <h2>Вход в систему</h2>
+
+    <div th:if="${param.error}" class="error">
+        Неверное имя пользователя или пароль
     </div>
-</div>
 
-<div class="container">
-    <div class="login-container">
-        <h2>Вход в систему</h2>
+    <div th:if="${param.logout}" style="color: green; text-align: center; margin-bottom: 20px;">
+        Вы успешно вышли из системы
+    </div>
 
-        <div th:if="${param.registered}" class="alert alert-success">
-            Регистрация успешна! Теперь вы можете войти.
+    <form th:action="@{/login}" method="post">
+        <div class="form-group">
+            <label for="username">Имя пользователя:</label>
+            <input type="text" id="username" name="username" required autofocus>
         </div>
 
-        <div th:if="${param.error}" class="alert alert-error">
-            Неверное имя пользователя или пароль.
+        <div class="form-group">
+            <label for="password">Пароль:</label>
+            <input type="password" id="password" name="password" required>
         </div>
 
-        <div th:if="${param.logout}" class="alert alert-success">
-            Вы успешно вышли из системы.
-        </div>
+        <button type="submit">Войти</button>
+    </form>
 
-        <div th:if="${error}" class="alert alert-error">
-            [[${error}]]
-        </div>
-
-        <form th:action="@{/login}" method="post">
-            <div class="form-group">
-                <label for="username">Имя пользователя:</label>
-                <input type="text" id="username" name="username" required>
-            </div>
-
-            <div class="form-group">
-                <label for="password">Пароль:</label>
-                <input type="password" id="password" name="password" required>
-            </div>
-
-            <button type="submit" class="btn">Войти</button>
-        </form>
-
-        <div class="register-link">
-            Нет аккаунта? <a href="/register">Зарегистрироваться</a>
-        </div>
+    <div class="links">
+        <p><a href="/">На главную</a></p>
+        <p>Нет аккаунта? <a href="/register">Зарегистрироваться</a></p>
     </div>
 </div>
 </body>

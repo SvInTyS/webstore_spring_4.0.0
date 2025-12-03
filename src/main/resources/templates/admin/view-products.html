@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Products List</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #2196F3; color: white; }
+        tr:nth-child(even) { background-color: #f2f2f2; }
+        .price { color: #2e7d32; font-weight: bold; }
+        .back-link { display: inline-block; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+<a href="/db-info" class="back-link">← Back to Database Info</a>
+<h1>🛒 Products in Database</h1>
+
+<div th:if="${products != null && !products.isEmpty()}">
+    <p>Total products: <span th:text="${products.size()}">0</span></p>
+    <table>
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Price</th>
+            <th>Stock</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="product : ${products}">
+            <td th:text="${product.id}">1</td>
+            <td th:text="${product.name}">Product Name</td>
+            <td th:text="${product.description}">Description</td>
+            <td class="price" th:text="${'$' + #numbers.formatDecimal(product.price, 1, 2)}">$0.00</td>
+            <td th:text="${product.stock}">0</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<div th:if="${products == null || products.isEmpty()}">
+    <p style="color: #d32f2f;">No products found in database.</p>
+    <p>Check DataInitializer configuration.</p>
+</div>
+</body>
+</html>

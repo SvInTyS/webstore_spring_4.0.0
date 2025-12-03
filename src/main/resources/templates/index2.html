@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/header :: layout(~{::content})}">
+<body>
+<div th:fragment="content">
+    <h1>Добро пожаловать в наш магазин!</h1>
+    <p>Это интернет-магазин на Spring Boot 4.0.0</p>
+
+    <div sec:authorize="!isAuthenticated()">
+        <p>Для доступа к полному функционалу:</p>
+        <a th:href="@{/register}" class="btn">Зарегистрироваться</a>
+        <a th:href="@{/login}" class="btn">Войти</a>
+    </div>
+
+    <div sec:authorize="isAuthenticated()">
+        <p>Перейдите в каталог для просмотра товаров:</p>
+        <a th:href="@{/catalog}" class="btn">Перейти в каталог</a>
+    </div>
+
+    <div sec:authorize="hasRole('ADMIN')">
+        <hr>
+        <p>Вы имеете права администратора:</p>
+        <a th:href="@{/admin/products}" class="btn btn-admin">Админ-панель</a>
+    </div>
+</div>
+</body>
+</html>
