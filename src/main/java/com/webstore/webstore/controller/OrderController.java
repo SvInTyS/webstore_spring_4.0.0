@@ -1,92 +1,92 @@
 package com.webstore.webstore.controller;
 
+import com.webstore.webstore.entity.CartItem;
 import com.webstore.webstore.entity.Order;
+import com.webstore.webstore.entity.OrderItem;
 import com.webstore.webstore.entity.User;
+import com.webstore.webstore.service.CartService;
 import com.webstore.webstore.service.OrderService;
 import com.webstore.webstore.service.UserService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 @Controller
-@RequestMapping("/orders")
 public class OrderController {
 
+    private final CartService cartService;
     private final OrderService orderService;
     private final UserService userService;
 
-    public OrderController(OrderService orderService, UserService userService) {
+    public OrderController(CartService cartService, OrderService orderService, UserService userService) {
+        this.cartService = cartService;
         this.orderService = orderService;
         this.userService = userService;
     }
 
-    @GetMapping
-    public String myOrders(@AuthenticationPrincipal UserDetails userDetails, Model model) {
-        User user = userService.findByUsernameEntity(userDetails.getUsername());
-        model.addAttribute("orders", orderService.getUserOrders(user));
-        return "orders/list";
-    }
+    @GetMapping("/order")
+    public String orderPage(Model model, @AuthenticationPrincipal UserDetails userDetails) {
 
-    @GetMapping("/{id}")
-    public String orderDetails(@PathVariable Long id,
-                               @AuthenticationPrincipal UserDetails userDetails,
-                               Model model) {
-        Order order = orderService.getOrderById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Заказ не найден"));
-
-        // Проверяем, что заказ принадлежит пользователю
         User user = userService.findByUsernameEntity(userDetails.getUsername());
-        if (!order.getUser().getId().equals(user.getId())) {
-            throw new IllegalArgumentException("Доступ запрещен");
+        List<CartItem> cartItems = cartService.getCartItems(user);
+
+        if (cartItems.isEmpty()) {
+            model.addAttribute("empty", true);
+            return "order";
         }
 
-        model.addAttribute("order", order);
-        return "orders/details";
+        model.addAttribute("items", cartItems);
+
+        BigDecimal total = cartItems.stream()
+                .map(item -> item.getProduct().getPrice()
+                        .multiply(BigDecimal.valueOf(item.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        model.addAttribute("total", total);
+
+        return "order";
     }
 
-    @PostMapping("/create")
-    public String createOrder(@AuthenticationPrincipal UserDetails userDetails,
-                              RedirectAttributes redirectAttributes) {
+    @PostMapping("/order/confirm")
+    public String confirmOrder(@AuthenticationPrincipal UserDetails userDetails) {
+
         User user = userService.findByUsernameEntity(userDetails.getUsername());
+        List<CartItem> cartItems = cartService.getCartItems(user);
+
+        if (cartItems.isEmpty()) {
+            return "redirect:/cart?error=empty";
+        }
+
+        // теперь вызываем реальный OrderService.createOrder(user)
         Order order = orderService.createOrder(user);
 
-        redirectAttributes.addFlashAttribute("success", "Заказ создан. Добавьте товары.");
-        return "redirect:/orders/" + order.getId();
-    }
-
-    @PostMapping("/{id}/add-product")
-    public String addProductToOrder(@PathVariable Long id,
-                                    @RequestParam Long productId,
-                                    @RequestParam Integer quantity,
-                                    RedirectAttributes redirectAttributes) {
-        try {
-            orderService.addProductToOrder(id, productId, quantity);
-            redirectAttributes.addFlashAttribute("success", "Товар добавлен в заказ");
-        } catch (IllegalArgumentException e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        // добавляем товары
+        for (CartItem cart : cartItems) {
+            orderService.addProductToOrder(order.getId(),
+                    cart.getProduct().getId(),
+                    cart.getQuantity());
         }
-        return "redirect:/orders/" + id;
+
+        // очищаем корзину
+        cartService.clearCart(user);
+
+        return "redirect:/order/success?id=" + order.getId();
     }
 
-    @PostMapping("/{id}/cancel")
-    public String cancelOrder(@PathVariable Long id,
-                              @AuthenticationPrincipal UserDetails userDetails,
-                              RedirectAttributes redirectAttributes) {
-        // Проверка принадлежности заказа
+    @GetMapping("/order/success")
+    public String orderSuccess(Long id, Model model) {
+
         Order order = orderService.getOrderById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Заказ не найден"));
+                .orElseThrow(() -> new RuntimeException("Order not found"));
 
-        User user = userService.findByUsernameEntity(userDetails.getUsername());
-        if (!order.getUser().getId().equals(user.getId())) {
-            redirectAttributes.addFlashAttribute("error", "Доступ запрещен");
-            return "redirect:/orders";
-        }
+        model.addAttribute("order", order);
 
-        orderService.cancelOrder(id);
-        redirectAttributes.addFlashAttribute("success", "Заказ отменен");
-        return "redirect:/orders";
+        return "order_success";
     }
 }

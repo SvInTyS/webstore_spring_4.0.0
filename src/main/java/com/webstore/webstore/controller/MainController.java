@@ -1,27 +1,29 @@
 package com.webstore.webstore.controller;
 
+import com.webstore.webstore.repository.ProductRepository;
+import com.webstore.webstore.repository.UserRepository;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
 public class MainController {
 
+    private final UserRepository userRepository;
+    private final ProductRepository productRepository;
+
+    public MainController(UserRepository userRepository,
+                          ProductRepository productRepository) {
+        this.userRepository = userRepository;
+        this.productRepository = productRepository;
+    }
+
     @GetMapping("/")
-    public String home() {
+    public String index(Model model) {
+
+        model.addAttribute("usersCount", userRepository.count());
+        model.addAttribute("productsCount", productRepository.count());
+
         return "index";
-    }
-    /*
-   Удалил дубль метода
-    @GetMapping("/login")
-    public String login() {
-        return "login";
-    }
-   */
-    @GetMapping("/test")
-    @ResponseBody
-    public String test() {
-        return "Application is running! Database check: " +
-                "Users: " + userRepository.count() + ", " +
-                "Products: " + productRepository.count();
     }
 }
