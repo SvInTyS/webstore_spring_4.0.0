@@ -3,41 +3,26 @@ package com.webstore.webstore.config;
 import com.webstore.webstore.service.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 public class SecurityConfig {
 
-    @Bean
-    public BCryptPasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+    private final UserService userService;
+
+    public SecurityConfig(UserService userService) {
+        this.userService = userService;
     }
 
-    // ✔️ Передаём UserService как аргумент бина – НЕТ циклов
     @Bean
-    public AuthenticationManager authenticationManager(UserService userService,
-                                                       BCryptPasswordEncoder encoder) {
-
-        return authentication -> {
-            UserDetails user = userService.loadUserByUsername(authentication.getName());
-
-            String raw = authentication.getCredentials().toString();
-            if (!encoder.matches(raw, user.getPassword())) {
-                throw new BadCredentialsException("Invalid credentials");
-            }
-
-            return new UsernamePasswordAuthenticationToken(
-                    user,
-                    user.getPassword(),
-                    user.getAuthorities()
-            );
-        };
+    public AuthenticationProvider authenticationProvider(PasswordEncoder encoder) {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userService);
+        provider.setPasswordEncoder(encoder);
+        return provider;
     }
 
     @Bean
