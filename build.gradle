@@ -6,7 +6,6 @@ plugins {
 
 group = 'com.webstore'
 version = '0.0.1-SNAPSHOT'
-description = 'systems_engineering_spring'
 
 java {
     toolchain {
@@ -19,28 +18,17 @@ repositories {
 }
 
 dependencies {
-    // Основные зависимости Spring Boot 4.0.0
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
 
-    // Thymeleaf Extras для Spring Security 6
     implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
 
-    // H2 Database с явным указанием версии для Jakarta EE
     runtimeOnly 'com.h2database:h2:2.2.224'
 
-    // DevTools для разработки
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
-    // Тестирование
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.springframework.security:spring-security-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-}
-
-tasks.named('test') {
-    useJUnitPlatform()
 }

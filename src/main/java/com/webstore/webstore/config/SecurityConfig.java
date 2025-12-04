@@ -3,33 +3,41 @@ package com.webstore.webstore.config;
 import com.webstore.webstore.service.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 public class SecurityConfig {
 
-    private final UserService userService;
-
-    public SecurityConfig(UserService userService) {
-        this.userService = userService;
-    }
-
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    // ✔️ Передаём UserService как аргумент бина – НЕТ циклов
     @Bean
-    public DaoAuthenticationProvider authProvider() {
-        // Новый API: передаём UserDetailsService в конструктор
-        DaoAuthenticationProvider auth =
-                new DaoAuthenticationProvider(userService);
+    public AuthenticationManager authenticationManager(UserService userService,
+                                                       BCryptPasswordEncoder encoder) {
 
-        auth.setPasswordEncoder(passwordEncoder());
-        return auth;
+        return authentication -> {
+            UserDetails user = userService.loadUserByUsername(authentication.getName());
+
+            String raw = authentication.getCredentials().toString();
+            if (!encoder.matches(raw, user.getPassword())) {
+                throw new BadCredentialsException("Invalid credentials");
+            }
+
+            return new UsernamePasswordAuthenticationToken(
+                    user,
+                    user.getPassword(),
+                    user.getAuthorities()
+            );
+        };
     }
 
     @Bean
@@ -37,10 +45,10 @@ public class SecurityConfig {
 
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/login", "/register",
-                                "/css/**", "/js/**").permitAll()
+                        .requestMatchers("/", "/login", "/register", "/css/**", "/js/**").permitAll()
                         .anyRequest().authenticated()
                 )
+                .csrf(csrf -> csrf.disable())
                 .formLogin(login -> login
                         .loginPage("/login")
                         .defaultSuccessUrl("/", true)
